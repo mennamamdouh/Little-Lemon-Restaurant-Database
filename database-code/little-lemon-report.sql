@@ -118,3 +118,31 @@ DELIMITER ;
 
 -- To call the procedure
 CALL CheckBooking("2022-08-10 12:00:00", 5);
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-- Task5: verify a booking, and decline any reservations for tables that are already booked under another name. 
+
+DELIMITER //
+CREATE PROCEDURE AddValidBooking(IN book_date VARCHAR(45), IN table_no INT, IN customerId INT, IN persons INT)
+BEGIN
+	SET @booking := (SELECT Booking_ID FROM Bookings WHERE Booking_Date = book_date AND Table_Number = table_no);
+
+	START TRANSACTION;
+		SET @nex_book_id := (SELECT MAX(Booking_ID) FROM Bookings) + 1;
+			INSERT INTO Bookings
+				(Booking_ID, Booking_Date, Customer_ID, Table_Number, Number_of_Persons, Staff_ID)   
+			VALUES
+				(@nex_book_id, book_date, customerId, table_no, persons, 2);
+
+	-- Check if the booking is available or not
+	IF @booking THEN
+		ROLLBACK;
+		SELECT CONCAT("Table ", table_no, " is already booked. Booking cancelled.") AS "Booking Status";
+	ELSE
+		COMMIT;
+		SELECT CONCAT("Table ", table_no, " is booked for you.") AS "Booking Status";
+	END IF;
+
+END//
+DELIMITER ;
