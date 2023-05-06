@@ -165,7 +165,7 @@ DELIMITER ;
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
--- Task7: Cancle bookings in the booking table
+-- Task7: Cancel bookings in the booking table
 DELIMITER //
 CREATE PROCEDURE CancelBooking( IN book_id INT)
 BEGIN
