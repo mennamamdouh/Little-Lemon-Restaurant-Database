@@ -88,6 +88,7 @@ EXECUTE GetOrderDetail USING @id;
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 -- Task3: Create a stored procedure to delete a specific order with its id
+
 DELIMITER //
 CREATE PROCEDURE CancelOrder(IN id_order INT)
 BEGIN
@@ -100,3 +101,20 @@ DELIMITER ;
 
 -- To call the procedure
 CALL CancelOrder(1);
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-- Task4: Create a stored procedure to check whether a table in the restaurant is already booked.
+
+DELIMITER //
+CREATE PROCEDURE CheckBooking(IN book_date VARCHAR(45), IN table_no INT)
+BEGIN
+	SET @booking := (SELECT Booking_ID FROM Bookings WHERE Booking_Date = book_date AND Table_Number = table_no);
+	IF @booking THEN
+		SELECT CONCAT("Table ", table_no, " is already booked.") AS "Booking Status";
+		END IF;
+END//
+DELIMITER ;
+
+-- To call the procedure
+CALL CheckBooking("2022-08-10 12:00:00", 5);
