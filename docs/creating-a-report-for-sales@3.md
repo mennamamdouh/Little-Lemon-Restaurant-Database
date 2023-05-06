@@ -1,52 +1,43 @@
 > This documentation is for issue #3.
 
-Little Lemon Restaurant needs some reports about:
-1. The orders placed in the restaurant
-2. All customers with orders that cost more than $150.
-3. All menu items for which more than 2 orders have been placed.
-4. Creating some optimized queries to help Little Lemon monitor the sales
+<hr>
 
-And to do this task we need to use some clauses and features from SQL like _Views_.
+Little Lemon Restaurant needs some reports to monitor:
+* The orders placed in the restaurant.
+* The customers with specific orders.
+* The menu items with specific number of orders.
+
+And some features such as:
+* Delete a specific order
+* Check bookings
+* Add valid bookings
+* Update bookings
+* Cancel Bookings
+
+And to do those tasks we need to use some clauses and features from SQL like _Views_, _Stored Procedures_, _Triggers_ and _Prepare Statements_.
 
 <hr>
 
 ## Task 1 : The orders placed in the restaurant ##
 
-Little Lemon needs to know some information about the order placed in the restaurant like OrderID, Quantity, and Total Cost.
-
-Here is the code of the view:
-
-<ul>
+Little Lemon needs to know some information about the order placed in the restaurant like OrderID, Quantity, and Total Cost. It results in:
 
 ```sql
-CREATE VIEW OrdersView AS
-SELECT OD.OrderID, SUM(OD.Quantity) AS Quantity, O.Total_Cost
-FROM Orders_Details AS OD
-INNER JOIN Orders AS O
-	ON O.Order_ID = OD.OrderID
-GROUP BY OD.OrderID;
+mysql> SELECT * FROM OrdersView;
++---------+----------+------------+
+| OrderID | Quantity | Total_Cost |
++---------+----------+------------+
+|       1 |        7 |        890 |
+|       2 |        6 |        800 |
++---------+----------+------------+
+2 rows in set (0.00 sec)
 ```
-
-</ul>
-
-This results in the following information:
-
-<ul>
-
-| OrderID | Quantity    | Total Cost    |
-| :---:   | :---:       | :---:         |
-
-</ul>
 
 <hr>
 
 ## Task 2 : All customers with orders that cost more than $150 ##
 
-Little Lemon needs to know some information about the customers with specific orders.
-
-Here is the code:
-
-<ul>
+Little Lemon needs to know some information about the customers with specific orders. It results in:
 
 ```sql
 SELECT C.Customer_ID, C.Full_Name, O.Order_ID, (M.Item_ID * M.Price) AS Cost, M.Name AS MenuName
@@ -60,46 +51,39 @@ INNER JOIN Orders_Details AS OD
 INNER JOIN Menu AS M
 	ON M.Item_ID = OD.Item_ID
 WHERE O.Total_Cost > 150;
+
++-------------+---------------+----------+------+----------+
+| Customer_ID | Full_Name     | Order_ID | Cost | MenuName |
++-------------+---------------+----------+------+----------+
+|           1 | Rabia Mendoza |        1 |  150 | Pasta    |
+|           1 | Rabia Mendoza |        1 |  140 | Salad    |
+|           2 | Aayan Chaney  |        2 |  150 | Pasta    |
+|           2 | Aayan Chaney  |        2 |  300 | Fried    |
++-------------+---------------+----------+------+----------+
+4 rows in set (0.06 sec)
 ```
-
-</ul>
-
-This results in the following information:
-
-<ul>
-
-| CustomerID | FullName    | OrderID    | Cost | MenuName |
-| :---:      | :---:       | :---:      |:---: |:---:     |
-
-</ul>
 
 <hr>
 
 ## Task 3 : All menu items for which more than 2 orders have been placed ##
 
-Little Lemon needs to know some information about the menu items for which more than 2 orders have been placed.
-
-Here is the code:
-
-<ul>
+Little Lemon needs to know some information about the menu items for which more than 2 orders have been placed. It results in:
 
 ```sql
 SELECT Name AS MenuName FROM Menu
 WHERE Name = ANY(SELECT M.Name FROM Menu AS M
 					INNER JOIN Orders_Details AS OD
 						ON OD.Item_ID = M.Item_ID);
+
++----------+
+| MenuName |
++----------+
+| Pasta    |
+| Salad    |
+| Fried    |
++----------+
+3 rows in set (0.14 sec)
 ```
-
-</ul>
-
-This results in the following information:
-
-<ul>
-
-| MeneName |
-| :---:    |
-
-</ul>
 
 <hr>
 
@@ -115,235 +99,232 @@ We can optimize database queries using _stored procedures_ and _prepared stateme
 
 # Task 1 : Displays the maximum ordered quantity in the Orders table #
 
-The code:
-
-<ul>
+This was done using a _Stored Procedure_ called __GetMaxQuantity()__. It results in:
 
 ```sql
-DELIMITER //
-CREATE PROCEDURE GetMaxQuantity()
-BEGIN
-	SELECT MAX(TQ.Total_Quantity) AS "Max Quantity in Order"
-    FROM ((SELECT SUM(Quantity) AS Total_Quantity FROM Orders_Details GROUP BY OrderID)) AS TQ;
-END//
-DELIMITER ;
-```
-
-</ul>
-
-To call the procedure:
-
-<ul>
-
-```sql
-CALL GetMaxQuantity();
-```
-
-</ul>
-
-This results in the following information:
-
-<ul>
-
+mysql> CALL GetMaxQuantity();
++-----------------------+
 | Max Quantity in Order |
-| :------------------:  |
++-----------------------+
+|                     7 |
++-----------------------+
+1 row in set (0.08 sec)
 
-</ul>
+Query OK, 0 rows affected (0.08 sec)
+```
 
 <hr>
 
 ## Task 2 : Return information about an order #
 
-The code:
-
-<ul>
+This was done using a _Prepared Statement_ called __GetOrderDetail__. It results in:
 
 ```sql
-PREPARE GetOrderDetail FROM 'SELECT OD.OrderID, SUM(OD.Quantity) AS Quantity, O.Total_Cost
-FROM Orders_Details AS OD
-INNER JOIN Orders AS O
-	ON O.Order_ID = OD.OrderID
-WHERE OD.OrderID = ?
-GROUP BY OD.OrderID';
+mysql> SET @id = 1;
+Query OK, 0 rows affected (0.05 sec)
+
+mysql> EXECUTE GetOrderDetail USING @id;
++---------+----------+------------+
+| OrderID | Quantity | Total_Cost |
++---------+----------+------------+
+|       1 |        7 |        890 |
++---------+----------+------------+
+1 row in set (0.04 sec)
 ```
-
-</ul>
-
-To return Order Details of a specific order:
-
-<ul>
-
-```sql
-SET @id = 1;
-EXECUTE GetOrderDetail USING @id;
-```
-
-</ul>
-
-This results in the following information:
-
-<ul>
-
-| OrderID | Quantity    | Total Cost    |
-| :---:   | :---:       | :---:         |
-
-</ul>
 
 <hr>
 
 ## Task 3 : Delete a specific order with its id ##
 
-The code:
-
-<ul>
+This was done using a _Stored Procedure_ called __CancelOrder__. It takes the Order_ID and delete the order from the __Orders__, the __Orders_Details__, and the __Orders_Delivery_Status__ tables.
 
 ```sql
-DELIMITER //
-CREATE PROCEDURE CancelOrder(IN id_order INT)
-BEGIN
-	DELETE FROM Orders_Details WHERE OrderID = id_order;
-	DELETE FROM Orders_Delivery_Status WHERE Order_ID = id_order;
-	DELETE FROM Orders WHERE Order_ID = id_order;
-    SELECT CONCAT('Order ', id_order, ' is canceled') as 'Confirmation';
-END//
-DELIMITER ;
+mysql> CALL CancelOrder(1);
++---------------------+
+| Confirmation        |
++---------------------+
+| Order 1 is canceled |
++---------------------+
+1 row in set (0.32 sec)
+
+Query OK, 0 rows affected (0.32 sec)
 ```
-
-</ul>
-
-To call the procedure:
-
-<ul>
-
-```sql
-CALL CancelOrder(1);
-```
-
-</ul>
-
-This results in the following information:
-<ul>
-
-|      Confirmation     |
-| :------------------:  |
-| Order 1 is cancelled |
-
-</ul>
 
 <hr>
 
 ## Task 4 : Check the booking status of any table in the restaurant ##
 
-The code:
-
-<ul>
-
-```sql
-DELIMITER //
-CREATE PROCEDURE CheckBooking(IN book_date VARCHAR(45), IN table_no INT)
-BEGIN
-	SET @booking := (SELECT Booking_ID FROM Bookings WHERE Booking_Date = book_date AND Table_Number = table_no);
-	IF @booking THEN
-		SELECT CONCAT("Table ", table_no, " is already booked.") AS "Booking Status";
-		END IF;
-END//
-DELIMITER ;
-```
-
-</ul>
-
-To call the procedure:
-
-<ul>
+This was done using a _Stored Procedure_ called __CheckBooking__. It takes 2 input:
+1. Booking date
+2. Table number
+And then check if the booking already exists in the __Bookings__ table or not.
 
 ```sql
-CALL CheckBooking("2022-08-10 12:00:00", 5);
-```
+mysql> CALL CheckBooking("2022-08-10 12:00:00", 5);
++----------------------------+
+| Booking Status             |
++----------------------------+
+| Table 5 is already booked. |
++----------------------------+
+1 row in set (0.05 sec)
 
-</ul>
+Query OK, 0 rows affected (0.05 sec)
+```
 
 <hr>
 
-## Task 5 : verify a booking, and decline any reservations for tables that are already booked under another name ##
+## Task 5 : Verify a booking, and decline any reservations for tables that are already booked under another name ##
 
-The code:
+This was done using a _Stored Procedure_ called __AddValidBooking__. It takes 4 inputs:
+1. Booking date
+2. Table number
+3. Customer ID
+4. Number of persons
 
-<ul>
+And check if there's an existing booking at the same time on the same table number, it prints that there's already an existing booking. Else, it stores this booking into the __Bookings__ table.
 
-```sql
-DELIMITER //
-CREATE PROCEDURE AddValidBooking(IN book_date VARCHAR(45), IN table_no INT, IN customerId INT, IN persons INT)
-BEGIN
-	SET @booking := (SELECT Booking_ID FROM Bookings WHERE Booking_Date = book_date AND Table_Number = table_no);
+* If there's already a booking at this time on the same table number.
 
-	START TRANSACTION;
-		SET @nex_book_id := (SELECT MAX(Booking_ID) FROM Bookings) + 1;
-			INSERT INTO Bookings
-				(Booking_ID, Booking_Date, Customer_ID, Table_Number, Number_of_Persons, Staff_ID)   
-			VALUES
-				(@nex_book_id, book_date, customerId, table_no, persons, 2);
+	```sql
+	mysql> CALL AddValidBooking("2022-08-10 12:00:00", 5, 1, 5);
+	+-----------------------------------------------+
+	| Booking Status                                |
+	+-----------------------------------------------+
+	| Table 5 is already booked. Booking cancelled. |
+	+-----------------------------------------------+
+	1 row in set (0.03 sec)
 
-	-- Check if the booking is available or not
-	IF @booking THEN
-		ROLLBACK;
-		SELECT CONCAT("Table ", table_no, " is already booked. Booking cancelled.") AS "Booking Status";
-	ELSE
-		COMMIT;
-		SELECT CONCAT("Table ", table_no, " is booked for you.") AS "Booking Status";
-	END IF;
+	Query OK, 0 rows affected (0.03 sec)
+	```
 
-END//
-DELIMITER ;
-```
+* If the booking date is different from all the bookings.
+
+	```sql
+	mysql> CALL AddValidBooking("2022-10-10 12:00:00", 5, 1, 5);  
+	+----------------------------+
+	| Booking Status             |
+	+----------------------------+
+	| Table 5 is booked for you. |
+	+----------------------------+
+	1 row in set (0.07 sec)
+
+	Query OK, 0 rows affected (0.07 sec)
+
+	mysql> SELECT * FROM Bookings;
+	+------------+---------------------+-------------+--------------+-------------------+----------+
+	| Booking_ID | Booking_Date        | Customer_ID | Table_number | Number_of_Persons | Staff_ID |
+	+------------+---------------------+-------------+--------------+-------------------+----------+
+	|          1 | 2022-08-10 12:00:00 |           1 |            5 |                10 |        2 |
+	|          2 | 2022-09-15 03:30:00 |           2 |            4 |                 4 |        2 |
+	|          3 | 2022-10-10 12:00:00 |           1 |            5 |                 5 |        2 |
+	+------------+---------------------+-------------+--------------+-------------------+----------+
+	3 rows in set (0.00 sec)
+	```
+
+* If the table number is different from all the bookings.
+
+	```sql
+	mysql> CALL AddValidBooking("2022-10-10 12:00:00", 2, 1, 5); 
+	+----------------------------+
+	| Booking Status             |
+	+----------------------------+
+	| Table 2 is booked for you. |
+	+----------------------------+
+	1 row in set (0.03 sec)
+
+	Query OK, 0 rows affected (0.04 sec)
+
+	mysql> SELECT * FROM Bookings;
+	+------------+---------------------+-------------+--------------+-------------------+----------+
+	| Booking_ID | Booking_Date        | Customer_ID | Table_number | Number_of_Persons | Staff_ID |
+	+------------+---------------------+-------------+--------------+-------------------+----------+
+	|          1 | 2022-08-10 12:00:00 |           1 |            5 |                10 |        2 |
+	|          2 | 2022-09-15 03:30:00 |           2 |            4 |                 4 |        2 |
+	|          3 | 2022-10-10 12:00:00 |           1 |            5 |                 5 |        2 |
+	|          4 | 2022-10-10 12:00:00 |           1 |            2 |                 5 |        2 |
+	+------------+---------------------+-------------+--------------+-------------------+----------+
+	4 rows in set (0.05 sec)
+	```
 
 <hr>
 
 ## Task 6 : Update existing bookings in the booking table ##
 
-The code:
+This was done using a _Stored Procedure_ called __UpdateBooking__. It takes 2 inputs:
+1. Booking ID
+2. The new booking date
 
-<ul>
+* If the booking already exists
 
-```sql
-DELIMITER //
-CREATE PROCEDURE UpdateBooking( IN book_id INT, IN book_date VARCHAR(45))
-BEGIN
-	SET @booking := (SELECT Booking_ID FROM Bookings WHERE Booking_ID = book_id);
-	IF @booking THEN
-		UPDATE Bookings SET Booking_Date = book_date WHERE Booking_ID = book_id;
-		SELECT CONCAT("Booking ", book_id, " is updated.") AS "Confirmation";
-	ELSE
-		SELECT CONCAT("There is no booking with booking id ", book_id) AS "Confirmation";
-	END IF;
-END//
-DELIMITER ;
-```
+	```sql
+	mysql> CALL UpdateBooking(2, "2022-09-20 3:30");
+	+-----------------------+
+	| Confirmation          |
+	+-----------------------+
+	| Booking 2 is updated. |
+	+-----------------------+
+	1 row in set (0.09 sec)
+
+	Query OK, 0 rows affected (0.10 sec)
+
+	mysql> SELECT * FROM Bookings;
+	+------------+---------------------+-------------+--------------+-------------------+----------+
+	| Booking_ID | Booking_Date        | Customer_ID | Table_number | Number_of_Persons | Staff_ID |
+	+------------+---------------------+-------------+--------------+-------------------+----------+
+	|          1 | 2022-08-10 12:00:00 |           1 |            5 |                10 |        2 |
+	|          2 | 2022-09-20 03:30:00 |           2 |            4 |                 4 |        2 |
+	|          3 | 2022-10-10 12:00:00 |           1 |            5 |                 5 |        2 |
+	|          4 | 2022-10-10 12:00:00 |           1 |            2 |                 5 |        2 |
+	+------------+---------------------+-------------+--------------+-------------------+----------+
+	4 rows in set (0.00 sec)
+	```
+
+* If the booking doesn't exist.
+
+	```sql
+	mysql> CALL UpdateBooking(7, "2022-09-20 3:30"); 
+	+---------------------------------------+
+	| Confirmation                          |
+	+---------------------------------------+
+	| There is no booking with booking id 7 |
+	+---------------------------------------+
+	1 row in set (0.03 sec)
+
+	Query OK, 0 rows affected (0.03 sec)
+	```
 
 <hr>
 
-## Task 7 : Update existing bookings in the booking table ##
+## Task 7 : Cancel a booking ##
 
-The code:
+This was done using a _Stored Procedure_ called __CancelBooking__. It takes the Booking ID which the customer wants to cancel, and delete the booking from the __Bookings__ table, as well as delete the order related to this booking from the __Orders__, __Orders_Details__, and __Orders_Delivery_Status__.
 
-<ul>
+* If the booking already exists.
 
-```sql
-DELIMITER //
-CREATE PROCEDURE CancelBooking( IN book_id INT)
-BEGIN
-	SET @booking := (SELECT Booking_ID FROM Bookings WHERE Booking_ID = book_id);
-	IF @booking THEN
-		SET @order := (SELECT Order_ID FROM Orders WHERE Booking_ID = book_id);
-		DELETE FROM Orders_Details WHERE OrderID = @order;
-		DELETE FROM Orders_Delivery_Status WHERE Order_ID = @order;
-		DELETE FROM Orders WHERE Booking_ID = book_id;
-		DELETE FROM Bookings WHERE Booking_ID = book_id;
-		SELECT CONCAT("Booking ", book_id, " is cancelled.") AS "Confirmation";
-	ELSE
-		SELECT CONCAT("There is no booking with booking id ", book_id) AS "Confirmation";
-	END IF;
-END//
-DELIMITER ;
-```
+	```sql
+	mysql> CALL CancelBooking(2);
+	+-------------------------+
+	| Confirmation            |
+	+-------------------------+
+	| Booking 2 is cancelled. |
+	+-------------------------+
+	1 row in set (0.29 sec)
+
+	Query OK, 0 rows affected (0.29 sec)
+	```
+
+* If the booking doesn't exists.
+
+	```sql
+	mysql> CALL CancelBooking(8); 
+	+---------------------------------------+
+	| Confirmation                          |
+	+---------------------------------------+
+	| There is no booking with booking id 8 |
+	+---------------------------------------+
+	1 row in set (0.00 sec)
+
+	Query OK, 0 rows affected (0.01 sec)
+	```
 
 <hr>
