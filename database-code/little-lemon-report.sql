@@ -2,6 +2,22 @@ USE Little_Lemon_DB;
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+											  -- Total Cost Trigger --
+
+DELIMITER //
+CREATE TRIGGER TotalCost AFTER INSERT ON Orders_Delivery_Status FOR EACH ROW
+BEGIN
+	UPDATE Orders
+		SET Total_Cost = (SELECT SUM(OD.Quantity * M.Price) FROM Orders_Details AS OD
+							INNER JOIN Menu AS M
+								ON M.Item_ID = OD.Item_ID
+							WHERE OD.OrderID = NEW.Order_ID)
+		WHERE Order_ID = NEW.Order_ID;
+END//
+DELIMITER ;
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 											  -- Little Lemon Report --
 
 -- Task1: OrdersView
@@ -18,7 +34,7 @@ SELECT * FROM OrdersView;
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 -- Task2: Customers
-SELECT C.Customer_ID, C.Full_Name, O.Order_ID, O.Total_Cost, M.Name AS MenuName
+SELECT C.Customer_ID, C.Full_Name, O.Order_ID, (M.Item_ID * M.Price) AS Cost, M.Name AS MenuName
 FROM Customers AS C
 INNER JOIN Bookings AS B
 	ON B.Customer_ID = C.Customer_ID
@@ -46,8 +62,8 @@ WHERE Name = ANY(SELECT M.Name FROM Menu AS M
 DELIMITER //
 CREATE PROCEDURE GetMaxQuantity()
 BEGIN
-	SELECT MAX((SELECT SUM(Quantity) FROM Orders_Details GROUP BY OrderID)) AS "Max Quantity in Order"
-    FROM Orders_Details;
+	SELECT MAX(TQ.Total_Quantity) AS "Max Quantity in Order"
+    FROM ((SELECT SUM(Quantity) AS Total_Quantity FROM Orders_Details GROUP BY OrderID)) AS TQ;
 END//
 DELIMITER ;
 
@@ -73,13 +89,14 @@ EXECUTE GetOrderDetail USING @id;
 
 -- Task3: Create a stored procedure to delete a specific order with its id
 DELIMITER //
-CREATE PROCEDURE CancelOrder(IN orderId INT)
+CREATE PROCEDURE CancelOrder(IN id_order INT)
 BEGIN
-	DELETE FROM Orders_Details WHERE OrderID = orderId;
-	DELETE FROM Orders WHERE Order_ID = orderId;
-    SELECT CONCAT('Order ', orderId, ' is canceled') as 'Confirmation';
+	DELETE FROM Orders_Details WHERE OrderID = id_order;
+	DELETE FROM Orders_Delivery_Status WHERE Order_ID = id_order;
+	DELETE FROM Orders WHERE Order_ID = id_order;
+    SELECT CONCAT('Order ', id_order, ' is canceled') as 'Confirmation';
 END//
 DELIMITER ;
 
 -- To call the procedure
-CALL CancelOrder(5);
+CALL CancelOrder(1);
