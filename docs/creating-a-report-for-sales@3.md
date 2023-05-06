@@ -22,7 +22,7 @@ CREATE VIEW OrdersView AS
 SELECT OD.OrderID, SUM(OD.Quantity) AS Quantity, O.Total_Cost
 FROM Orders_Details AS OD
 INNER JOIN Orders AS O
-    ON O.Order_ID = OD.OrderID
+	ON O.Order_ID = OD.OrderID
 GROUP BY OD.OrderID;
 ```
 
@@ -48,7 +48,7 @@ Here is the code:
 <ul>
 
 ```sql
-SELECT C.Customer_ID, C.Full_Name, O.Order_ID, O.Total_Cost, M.Name AS MenuName
+SELECT C.Customer_ID, C.Full_Name, O.Order_ID, (M.Item_ID * M.Price) AS Cost, M.Name AS MenuName
 FROM Customers AS C
 INNER JOIN Bookings AS B
 	ON B.Customer_ID = C.Customer_ID
