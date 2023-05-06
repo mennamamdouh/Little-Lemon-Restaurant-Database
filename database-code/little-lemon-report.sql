@@ -146,3 +146,19 @@ BEGIN
 
 END//
 DELIMITER ;
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-- Task6: Update existing bookings in the booking table
+DELIMITER //
+CREATE PROCEDURE UpdateBooking( IN book_id INT, IN book_date VARCHAR(45))
+BEGIN
+	SET @booking := (SELECT Booking_ID FROM Bookings WHERE Booking_ID = book_id);
+	IF @booking THEN
+		UPDATE Bookings SET Booking_Date = book_date WHERE Booking_ID = book_id;
+		SELECT CONCAT("Booking ", book_id, " is updated.") AS "Confirmation";
+	ELSE
+		SELECT CONCAT("There is no booking with booking id ", book_id) AS "Confirmation";
+	END IF;
+END//
+DELIMITER ;
