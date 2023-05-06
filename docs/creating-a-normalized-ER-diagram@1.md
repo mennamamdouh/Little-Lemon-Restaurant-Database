@@ -60,7 +60,7 @@
 This design was implemented using MySQL Workbench tool.
 
 <p align="center">
-<img src="images/little-lemon-erd.png">
+<img src="https://user-images.githubusercontent.com/70551007/236650190-ff8b1a48-4d9b-446d-85c7-b7b9cc7a8be6.png">
 </p>
 
 <hr>
