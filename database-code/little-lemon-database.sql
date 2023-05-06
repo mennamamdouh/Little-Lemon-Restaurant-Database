@@ -67,17 +67,6 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `little_lemon_db`.`Orders_Delivery_Status`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `little_lemon_db`.`Orders_Delivery_Status` (
-  `Order_ID` INT NOT NULL,
-  `Delivery_Date` DATETIME NOT NULL,
-  `Delivery_Status` VARCHAR(45) NOT NULL,
-  PRIMARY KEY (`Order_ID`))
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
 -- Table `little_lemon_db`.`Orders`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `little_lemon_db`.`Orders` (
@@ -88,14 +77,25 @@ CREATE TABLE IF NOT EXISTS `little_lemon_db`.`Orders` (
   `Booking_ID` INT NOT NULL,
   PRIMARY KEY (`Order_ID`, `Table_number`),
   INDEX `FK_booking_in_orders_idx` (`Booking_ID` ASC) VISIBLE,
-  CONSTRAINT `FK_order_status_in_orders`
-    FOREIGN KEY (`Order_ID`)
-    REFERENCES `little_lemon_db`.`Orders_Delivery_Status` (`Order_ID`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
   CONSTRAINT `FK_booking_in_orders`
     FOREIGN KEY (`Booking_ID`)
     REFERENCES `little_lemon_db`.`Bookings` (`Booking_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `little_lemon_db`.`Orders_Delivery_Status`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `little_lemon_db`.`Orders_Delivery_Status` (
+  `Order_ID` INT NOT NULL,
+  `Delivery_Date` DATETIME NOT NULL,
+  `Delivery_Status` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`Order_ID`),
+  CONSTRAINT `FK_order_status_in_orders`
+    FOREIGN KEY (`Order_ID`)
+    REFERENCES `little_lemon_db`.`Orders` (`Order_ID`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -128,7 +128,7 @@ CREATE TABLE IF NOT EXISTS `little_lemon_db`.`Orders_Details` (
     REFERENCES `little_lemon_db`.`Menu` (`Item_ID`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `FK_order_in_orders`
+  CONSTRAINT `FK_order_detail_in_orders`
     FOREIGN KEY (`OrderID`)
     REFERENCES `little_lemon_db`.`Orders` (`Order_ID`)
     ON DELETE NO ACTION
