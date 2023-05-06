@@ -229,3 +229,121 @@ This results in the following information:
 | Order 1 is cancelled |
 
 </ul>
+
+<hr>
+
+## Task 4 : Check the booking status of any table in the restaurant ##
+
+The code:
+
+<ul>
+
+```sql
+DELIMITER //
+CREATE PROCEDURE CheckBooking(IN book_date VARCHAR(45), IN table_no INT)
+BEGIN
+	SET @booking := (SELECT Booking_ID FROM Bookings WHERE Booking_Date = book_date AND Table_Number = table_no);
+	IF @booking THEN
+		SELECT CONCAT("Table ", table_no, " is already booked.") AS "Booking Status";
+		END IF;
+END//
+DELIMITER ;
+```
+
+</ul>
+
+To call the procedure:
+
+<ul>
+
+```sql
+CALL CheckBooking("2022-08-10 12:00:00", 5);
+```
+
+</ul>
+
+<hr>
+
+## Task 5 : verify a booking, and decline any reservations for tables that are already booked under another name ##
+
+The code:
+
+<ul>
+
+```sql
+DELIMITER //
+CREATE PROCEDURE AddValidBooking(IN book_date VARCHAR(45), IN table_no INT, IN customerId INT, IN persons INT)
+BEGIN
+	SET @booking := (SELECT Booking_ID FROM Bookings WHERE Booking_Date = book_date AND Table_Number = table_no);
+
+	START TRANSACTION;
+		SET @nex_book_id := (SELECT MAX(Booking_ID) FROM Bookings) + 1;
+			INSERT INTO Bookings
+				(Booking_ID, Booking_Date, Customer_ID, Table_Number, Number_of_Persons, Staff_ID)   
+			VALUES
+				(@nex_book_id, book_date, customerId, table_no, persons, 2);
+
+	-- Check if the booking is available or not
+	IF @booking THEN
+		ROLLBACK;
+		SELECT CONCAT("Table ", table_no, " is already booked. Booking cancelled.") AS "Booking Status";
+	ELSE
+		COMMIT;
+		SELECT CONCAT("Table ", table_no, " is booked for you.") AS "Booking Status";
+	END IF;
+
+END//
+DELIMITER ;
+```
+
+<hr>
+
+## Task 6 : Update existing bookings in the booking table ##
+
+The code:
+
+<ul>
+
+```sql
+DELIMITER //
+CREATE PROCEDURE UpdateBooking( IN book_id INT, IN book_date VARCHAR(45))
+BEGIN
+	SET @booking := (SELECT Booking_ID FROM Bookings WHERE Booking_ID = book_id);
+	IF @booking THEN
+		UPDATE Bookings SET Booking_Date = book_date WHERE Booking_ID = book_id;
+		SELECT CONCAT("Booking ", book_id, " is updated.") AS "Confirmation";
+	ELSE
+		SELECT CONCAT("There is no booking with booking id ", book_id) AS "Confirmation";
+	END IF;
+END//
+DELIMITER ;
+```
+
+<hr>
+
+## Task 7 : Update existing bookings in the booking table ##
+
+The code:
+
+<ul>
+
+```sql
+DELIMITER //
+CREATE PROCEDURE CancelBooking( IN book_id INT)
+BEGIN
+	SET @booking := (SELECT Booking_ID FROM Bookings WHERE Booking_ID = book_id);
+	IF @booking THEN
+		SET @order := (SELECT Order_ID FROM Orders WHERE Booking_ID = book_id);
+		DELETE FROM Orders_Details WHERE OrderID = @order;
+		DELETE FROM Orders_Delivery_Status WHERE Order_ID = @order;
+		DELETE FROM Orders WHERE Booking_ID = book_id;
+		DELETE FROM Bookings WHERE Booking_ID = book_id;
+		SELECT CONCAT("Booking ", book_id, " is cancelled.") AS "Confirmation";
+	ELSE
+		SELECT CONCAT("There is no booking with booking id ", book_id) AS "Confirmation";
+	END IF;
+END//
+DELIMITER ;
+```
+
+<hr>
