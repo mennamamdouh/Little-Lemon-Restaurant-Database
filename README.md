@@ -230,7 +230,7 @@ WHERE Name = ANY(SELECT M.Name FROM Menu AS M
 
 <hr>
 
-# Query Optimization #
+## Query Optimization ##
 
 When working with MySQL databases, the response time, or turnaround time, is extremely important. It’s particularly important in terms of how long the database takes to respond to your SQL queries. As data volumes grow, and the data requirements grow increasingly more complex, then performance becomes more important for a better end-user experience.
 
@@ -240,7 +240,7 @@ We can optimize database queries using _stored procedures_ and _prepared stateme
 
 <hr>
 
-# Task 1 : Displays the maximum ordered quantity in the Orders table #
+## Task 1 : Displays the maximum ordered quantity in the Orders table ##
 
 This was done using a _Stored Procedure_ called __GetMaxQuantity()__. It results in:
 
