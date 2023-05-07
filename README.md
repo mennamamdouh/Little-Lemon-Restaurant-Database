@@ -7,6 +7,17 @@ This project is the Database Engineer Capstone guided by Meta. It passes through
    * [Final Desgin of the Database](#final-desgin-of-the-database)
    * [Implement the databse into MySQL Sever](#implement-the-databse-into-mysql-sever)
 2. Creating reports
+	* [The orders placed in the restaurant](#task-1--the-orders-placed-in-the-restaurant)
+	* [The customers with specific orders](#task-2--all-customers-with-orders-that-cost-more-than-150)
+	* [The best selling menu items](#task-3--all-menu-items-for-which-more-than-2-orders-have-been-placed)
+	* [Query Optimization](#query-optimization)
+	* [Displays the maximum ordered quantity in the Orders table](#task-1--displays-the-maximum-ordered-quantity-in-the-orders-table)
+	* [Return information about an order](#task-2--return-information-about-an-order)
+	* [Delete a specific order with its id](#task-3--delete-a-specific-order-with-its-id)
+	* [Check the booking status of any table in the restaurant](#task-4--check-the-booking-status-of-any-table-in-the-restaurant)
+	* [Verify a booking, and decline any reservations for tables that are already booked under another name](#task-5--verify-a-booking-and-decline-any-reservations-for-tables-that-are-already-booked-under-another-name)
+	* [Update existing bookings in the booking table](#task-6--update-existing-bookings-in-the-booking-table)
+	* [Cancel a booking](#task-7--cancel-a-booking)
 3. Working with data analytics and visualization
 4. Creating a database clients.
 
