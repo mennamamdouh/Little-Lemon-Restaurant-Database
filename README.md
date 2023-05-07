@@ -6,7 +6,7 @@ This project is the Database Engineer Capstone guided by Meta. It passes through
    * [Normalization Process](#normalization-process)
    * [Final Desgin of the Database](#final-desgin-of-the-database)
    * [Implement the databse into MySQL Sever](#implement-the-databse-into-mysql-sever)
-2. Creating reports
+2. [Creating reports](#2-creating-reports)
 	* [The orders placed in the restaurant](#task-1--the-orders-placed-in-the-restaurant)
 	* [The customers with specific orders](#task-2--all-customers-with-orders-that-cost-more-than-150)
 	* [The best selling menu items](#task-3--all-menu-items-for-which-more-than-2-orders-have-been-placed)
